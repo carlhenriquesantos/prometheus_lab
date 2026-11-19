@@ -1,0 +1,8 @@
+{
+  "name": "prometheus-lab-api",
+  "version": "1.0.0",
+  "description": "API demonstrativa para coleta de métricas com Prometheus e visualização no Grafana",
+  "main": "src/server.js",
+  "scripts": {"start": "node src/server.js"},
+  "dependencies": {"express": "^5.1.0", "prom-client": "^15.1.3"}
+}
