@@ -39,7 +39,13 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/provisioning/alerting/alert-rules.yml:/etc/grafana/provisioning/alerting/alert-rules.yml:ro
+      - ./grafana/provisioning/alerting/notification-policies.yml:/etc/grafana/provisioning/alerting/notification-policies.yml:ro
+    configs:
+      - source: grafana_telegram_contact_point
+        target: /etc/grafana/provisioning/alerting/contact-points.yml
     restart: unless-stopped
     depends_on:
       - prometheus
@@ -47,3 +53,22 @@ services:
 volumes:
   prometheus_data:
   grafana_data:
+
+configs:
+  # Contact point do Telegram gerado pelo Compose a partir do .env (fora do Git).
+  # A substituição é feita aqui, e não pelo Grafana, porque o Grafana converte
+  # um chat ID numérico vindo de variável em número e rejeita o provisionamento.
+  # Sem .env, os valores padrão deixam o Grafana subir; só o envio ao Telegram falha.
+  grafana_telegram_contact_point:
+    content: |
+      apiVersion: 1
+      contactPoints:
+        - orgId: 1
+          name: telegram
+          receivers:
+            - uid: telegram-grafana-monitor
+              type: telegram
+              settings:
+                bottoken: "${TELEGRAM_BOT_TOKEN:-nao-configurado}"
+                chatid: "${TELEGRAM_CHAT_ID:-0}"
+              disableResolveMessage: false

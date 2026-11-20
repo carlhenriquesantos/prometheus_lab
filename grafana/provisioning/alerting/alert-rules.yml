@@ -1,0 +1,42 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: monitor-api
+    folder: Prometheus Lab
+    interval: 30s
+    rules:
+      - uid: api-erro-5xx-alto
+        title: API - Taxa de erro 5xx alta
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: 100 * sum(rate(http_requests_total{status_code=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params:
+                      - 5
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: Mais de 5% das requisições da monitor-api retornaram HTTP 5xx nos últimos 5 minutos.
+        labels:
+          severity: critical
+        isPaused: false
