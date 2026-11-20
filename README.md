@@ -88,6 +88,35 @@ Latência P95:
 histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))
 ```
 
+## Alerta no Telegram
+O Grafana já sobe com o alerta provisionado (`grafana/provisioning/alerting/` e `configs` do `docker-compose.yml`):
+
+- **Regra:** `API - Taxa de erro 5xx alta`, na pasta **Prometheus Lab**. Dispara quando mais de 5% das requisições retornam HTTP 5xx nos últimos 5 minutos, por pelo menos 1 minuto.
+- **Contact point:** `telegram`, que envia as mensagens de disparo (*Firing*) e de resolução (*Resolved*).
+- **Política de notificação:** encaminha todos os alertas para o `telegram`.
+
+Para receber as mensagens, configure o bot num arquivo `.env`. Esse arquivo não é versionado, então o token não vai para o Git:
+
+```bash
+cp .env.example .env
+# edite o .env com o token do bot (@BotFather) e o chat ID
+docker compose up -d --force-recreate grafana
+```
+
+Use `--force-recreate` sempre que alterar o `.env`, para o Grafana recarregar o contact point. Sem `.env` o laboratório sobe normalmente: o alerta dispara, mas o envio ao Telegram falha.
+
+Para disparar o alerta, gere erros por alguns minutos:
+
+```bash
+for i in {1..150}; do
+  curl -s http://localhost:3000/api/erro >/dev/null
+  curl -s http://localhost:3000/api/produtos >/dev/null
+  sleep 1
+done
+```
+
+> Se um token chegar a ser commitado, revogue-o no @BotFather e gere outro. Apagar o arquivo depois não o remove do histórico do Git.
+
 ## Parar / remover
 ```bash
 docker compose down
