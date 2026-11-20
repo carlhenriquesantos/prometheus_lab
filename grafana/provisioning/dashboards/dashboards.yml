@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: prometheus-lab
+    orgId: 1
+    folder: Prometheus Lab
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
