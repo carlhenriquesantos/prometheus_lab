@@ -1,9 +1,9 @@
 # Prometheus Lab — API + Prometheus + Grafana
 
-Laboratório simples de observabilidade de métricas com uma API Node.js/Express, Prometheus e Grafana, orquestrado por Docker Compose.
+Laboratório de observabilidade de métricas com uma API Node.js/Express, Prometheus e Grafana, orquestrado por Docker Compose.
 
 ## Requisitos
-- Docker Engine e Docker Compose (Docker Desktop também serve)
+- Docker Engine e Docker Compose
 
 ## Subir o laboratório
 Na pasta do projeto:
@@ -96,3 +96,59 @@ Remove também os volumes persistentes (apaga histórico de métricas e dados do
 ```bash
 docker compose down -v
 ```
+
+## EVIDÊNCIAS
+
+Capturas de tela do laboratório em execução (`docker compose up -d --build`) após gerar carga de tráfego nos endpoints. As imagens ficam na pasta [`evidences/`](evidences/).
+
+### API (monitor-api)
+
+**Endpoint raiz** — `http://localhost:3000/`
+
+![API raiz](evidences/01-api-root.png)
+
+**Health check** — `http://localhost:3000/health`
+
+![API health](evidences/02-api-health.png)
+
+**Endpoint de produtos** — `http://localhost:3000/api/produtos`
+
+![API produtos](evidences/03-api-produtos.png)
+
+**Métricas expostas para o Prometheus** — `http://localhost:3000/metrics`
+
+![API metrics](evidences/04-api-metrics.png)
+
+### Prometheus
+
+**Targets com estado UP** (`monitor-api` e `prometheus`) — `http://localhost:9090/targets`
+
+![Prometheus targets](evidences/05-prometheus-targets.png)
+
+**Total de requisições por rota e status** — `sum by (route, status_code) (http_requests_total)`
+
+![Prometheus requests total](evidences/06-prometheus-requests-total.png)
+
+**Requisições por segundo** — `sum(rate(http_requests_total[1m]))`
+
+![Prometheus RPS](evidences/07-prometheus-rps.png)
+
+**Latência P95** — `histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))`
+
+![Prometheus latência P95](evidences/08-prometheus-latencia-p95.png)
+
+### Grafana
+
+**Datasource Prometheus provisionado** — `http://localhost:3001/connections/datasources`
+
+![Grafana datasource](evidences/09-grafana-datasource.png)
+
+**Dashboard Monitor API - Prometheus Lab**
+
+![Grafana dashboard](evidences/10-grafana-dashboard.png)
+
+### Alerta no Telegram
+
+**Notificação do alerta "API - Taxa de erro 5xx alta" enviada pelo Grafana ao bot do Telegram** — mensagem de disparo (**Firing**) e de resolução (**Resolved**).
+
+<img src="evidences/11-telegram-Grafana-Monitor-Evidence.jpeg" alt="Alerta do Grafana no Telegram" width="360">
